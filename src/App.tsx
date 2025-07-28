@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import '@/i18n';
 import Assessment from "./pages/Assessment";
 import Admin from "./pages/Admin";
-import Analytics from "./pages/Analytics";
+
 
 const queryClient = new QueryClient();
 
@@ -21,7 +21,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Assessment />} />
             <Route path="/admin" element={<Admin />} />
-            <Route path="/analytics" element={<Analytics />} />
+            
             <Route path="*" element={<Assessment />} />
           </Routes>
         </BrowserRouter>

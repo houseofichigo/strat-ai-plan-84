@@ -20,7 +20,7 @@ import {
   Shield,
   Play
 } from 'lucide-react';
-import Navigation from '@/components/Navigation';
+
 import { useToast } from '@/hooks/use-toast';
 
 interface AssessmentResultsProps {
@@ -156,7 +156,7 @@ export const AssessmentResults: React.FC<AssessmentResultsProps> = ({ formData }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <Navigation />
+      
       
       {/* Confetti Effect */}
       {showConfetti && (
