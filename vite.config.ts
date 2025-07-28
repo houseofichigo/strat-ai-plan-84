@@ -4,7 +4,8 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({base: "/strat-ai-plan-84-main/",
+export default defineConfig(({ mode }) => ({
+  base: "/strat-ai-plan-84-main/",
   server: {
     host: "::",
     port: 8080,
