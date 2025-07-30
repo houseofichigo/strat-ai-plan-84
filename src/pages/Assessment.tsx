@@ -141,7 +141,20 @@ const Assessment = () => {
         {/* Progress Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold text-foreground">AI Maturity Assessment</h1>
+            <div className="flex items-center gap-4">
+              {/* House of Ichigo Logo */}
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-lg">人合</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm text-muted-foreground uppercase tracking-wider">House of</span>
+                  <span className="text-lg font-bold text-primary uppercase tracking-wider">ICHIGO</span>
+                </div>
+              </div>
+              <div className="h-8 w-px bg-border mx-2"></div>
+              <h1 className="text-3xl font-bold text-foreground">AI Maturity Assessment</h1>
+            </div>
             <div className="flex items-center gap-4">
               <Button
                 onClick={handleTestSubmission}
