@@ -24,6 +24,21 @@ export const QuestionText: React.FC<QuestionTextProps> = ({
   const { getError } = useAssessmentForm();
   const error = getError(sectionId, question.id);
 
+  const getInputType = (question: AssessmentQuestion): string => {
+    if (question.id === 'email') return 'email';
+    if (question.id === 'website') return 'url';
+    return 'text';
+  };
+
+  const getPlaceholder = (question: AssessmentQuestion): string => {
+    if (question.id === 'email') return 'your.email@example.com';
+    if (question.id === 'website') return 'https://example.com or example.com';
+    if (question.id === 'full-name') return 'Enter your full name';
+    if (question.id === 'company-name') return 'Enter your company name';
+    if (question.type === 'textarea') return 'Please provide details...';
+    return 'Type your answer here...';
+  };
+
   return (
     <Card className="p-6">
       <div className="space-y-4">
@@ -60,14 +75,18 @@ export const QuestionText: React.FC<QuestionTextProps> = ({
           <Textarea
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="Type your answer here..."
-            className="min-h-[100px]"
+            placeholder={getPlaceholder(question)}
+            className={`min-h-[100px] ${error ? 'border-destructive' : ''}`}
+            data-error={!!error}
           />
         ) : (
           <Input
+            type={getInputType(question)}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="Type your answer here..."
+            placeholder={getPlaceholder(question)}
+            className={error ? 'border-destructive' : ''}
+            data-error={!!error}
           />
         )}
       </div>

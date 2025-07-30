@@ -135,7 +135,7 @@ export const assessmentSections: AssessmentSectionData[] = [
         text: 'What\'s the main challenge preventing you from defining AI use-cases?',
         description: 'Share any specific obstacles you\'re facing. This helps us provide targeted recommendations.',
         type: 'textarea',
-        required: false
+        required: true
       },
       {
         id: 'ai-strategy-owner',
@@ -241,7 +241,7 @@ export const assessmentSections: AssessmentSectionData[] = [
         text: 'Share any additional details or concerns from your investors or board.',
         description: 'Optional context about stakeholder perspectives helps us tailor our recommendations.',
         type: 'textarea',
-        required: false
+        required: true
       },
       {
         id: 'expected-timeline',
@@ -313,7 +313,7 @@ export const assessmentSections: AssessmentSectionData[] = [
         text: 'Do you have partnerships or vendor support for your AI initiatives?',
         description: 'Existing partnerships can accelerate implementation or may need coordination in our recommendations.',
         type: 'radio',
-        required: false,
+        required: true,
         options: [
           'No',
           'Informal collaborations',
@@ -782,14 +782,14 @@ export const assessmentSections: AssessmentSectionData[] = [
         text: 'Which process would you prioritize for automation?',
         description: 'Understanding your top priority helps us focus our AI recommendations on your most pressing needs.',
         type: 'textarea',
-        required: false
+        required: true
       },
       {
         id: 'never-automate',
         text: 'Which processes must remain human-managed?',
         description: 'Identifying processes that should stay human ensures our AI recommendations respect your business values and requirements.',
         type: 'textarea',
-        required: false
+        required: true
       },
       {
         id: 'ai-agent-tasks',
@@ -1197,7 +1197,7 @@ export const assessmentSections: AssessmentSectionData[] = [
         text: 'Full Name',
         description: 'Used for personalization and direct communication.',
         type: 'text',
-        required: false
+        required: true
       },
       {
         id: 'role',
@@ -1219,7 +1219,7 @@ export const assessmentSections: AssessmentSectionData[] = [
         text: 'Company Name',
         description: 'Optional field for report personalization.',
         type: 'text',
-        required: false
+        required: true
       },
       {
         id: 'company-size',
@@ -1338,7 +1338,7 @@ export const assessmentSections: AssessmentSectionData[] = [
         text: 'Website',
         description: 'Optional field for additional context.',
         type: 'text',
-        required: false
+        required: true
       },
       {
         id: 'personal-ai-maturity',

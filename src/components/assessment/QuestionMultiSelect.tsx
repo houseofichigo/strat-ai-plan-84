@@ -64,7 +64,7 @@ export const QuestionMultiSelect: React.FC<QuestionMultiSelectProps> = ({
           )}
         </div>
         
-        <div className="space-y-3">
+        <div className={`space-y-3 ${error ? 'p-2 border border-destructive/20 rounded-lg' : ''}`} data-error={!!error}>
           {question.options?.map((option, index) => (
             <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
               <Checkbox

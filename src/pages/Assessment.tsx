@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AssessmentSection } from '@/components/assessment/AssessmentSection';
 import { AssessmentResults } from '@/components/assessment/AssessmentResults';
-import { ChevronRight, ChevronLeft, TestTube } from 'lucide-react';
+import { ChevronRight, ChevronLeft, TestTube, AlertCircle, Save, CheckCircle } from 'lucide-react';
 import { assessmentSections } from '@/data/assessmentData';
 import { useAssessmentForm } from '@/hooks/useAssessmentForm';
 import { assessmentService } from '@/services/assessmentService';
@@ -13,29 +14,63 @@ import { useToast } from '@/hooks/use-toast';
 const Assessment = () => {
   const [currentSection, setCurrentSection] = useState(0);
   const [showResults, setShowResults] = useState(false);
-  const { formData, updateAnswer, validateSection, isComplete } = useAssessmentForm();
+  const [showValidationAlert, setShowValidationAlert] = useState(false);
+  const { 
+    formData, 
+    updateAnswer, 
+    validateSection, 
+    isComplete, 
+    getProgress, 
+    getSectionProgress,
+    errors,
+    isAutoSaving,
+    clearDraft
+  } = useAssessmentForm();
   const { toast } = useToast();
 
   const totalSections = assessmentSections.length;
-  const progress = ((currentSection + 1) / totalSections) * 100;
+  const progressInfo = getProgress();
+  const sectionProgress = getSectionProgress(currentSection);
+
+  // Scroll to top when section changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentSection]);
 
   const handleNext = async () => {
+    // Hide any previous alerts
+    setShowValidationAlert(false);
+    
     if (validateSection(currentSection)) {
       if (currentSection < totalSections - 1) {
         setCurrentSection(currentSection + 1);
       } else {
         await handleSubmit();
       }
+    } else {
+      // Show validation alert
+      setShowValidationAlert(true);
+      // Scroll to first error
+      setTimeout(() => {
+        const firstError = document.querySelector('[data-error="true"]');
+        if (firstError) {
+          firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
     }
   };
 
   const handleSubmit = async () => {
     if (isComplete()) {
       try {
+        // Extract email from form data for submission
+        const email = formData['metadata-respondent-info']?.['email'] || 'user@example.com';
+        const fullName = formData['metadata-respondent-info']?.['full-name'] || 'Anonymous User';
+        
         const result = await assessmentService.submitAssessment({
           formData,
-          userEmail: 'user@example.com',
-          userName: 'Anonymous User'
+          userEmail: email as string,
+          userName: fullName as string
         });
         
         if (result.success) {
@@ -43,6 +78,7 @@ const Assessment = () => {
             title: 'Assessment Submitted',
             description: `Your assessment has been submitted successfully. ID: ${result.submissionId}`,
           });
+          clearDraft(); // Clear saved draft after successful submission
           setShowResults(true);
         } else {
           toast({
@@ -86,6 +122,7 @@ const Assessment = () => {
   };
 
   const handlePrevious = () => {
+    setShowValidationAlert(false);
     if (currentSection > 0) {
       setCurrentSection(currentSection - 1);
     }
@@ -96,6 +133,7 @@ const Assessment = () => {
   }
 
   const currentSectionData = assessmentSections[currentSection];
+  const hasErrors = Object.keys(errors).some(key => key.startsWith(currentSectionData.id));
 
   return (
     <div className="min-h-screen bg-background">
@@ -113,19 +151,40 @@ const Assessment = () => {
                 <TestTube className="w-4 h-4 mr-2" />
                 Test Submission
               </Button>
-              <span className="text-sm text-muted-foreground">
-                Section {currentSection + 1} of {totalSections}
-              </span>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                {isAutoSaving && (
+                  <div className="flex items-center gap-1">
+                    <Save className="w-3 h-3 animate-pulse" />
+                    <span>Saving...</span>
+                  </div>
+                )}
+                <span>Section {currentSection + 1} of {totalSections}</span>
+              </div>
             </div>
           </div>
           
-          <Progress value={progress} className="h-2" />
+          <Progress value={progressInfo.percentage} className="h-3" />
           
           <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-            <span>Progress: {Math.round(progress)}%</span>
+            <span>
+              Progress: {Math.round(progressInfo.percentage)}% 
+              ({progressInfo.answered} of {progressInfo.total} questions)
+            </span>
             <span>Est. {currentSectionData.estimatedTime} remaining</span>
           </div>
         </div>
+
+        {/* Validation Alert */}
+        {showValidationAlert && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Missing Required Information</AlertTitle>
+            <AlertDescription>
+              Please complete all required fields before proceeding to the next section.
+              {hasErrors && " Check the highlighted questions below."}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Current Section */}
         <Card className="mb-8">
@@ -138,6 +197,9 @@ const Assessment = () => {
               <span className="text-sm font-normal text-muted-foreground ml-2">
                 ({currentSectionData.weight})
               </span>
+              {sectionProgress.answered === sectionProgress.total && (
+                <CheckCircle className="w-5 h-5 text-green-600 ml-auto" />
+              )}
             </CardTitle>
             <div className="mt-4 space-y-2">
               <p className="text-muted-foreground">
@@ -148,6 +210,14 @@ const Assessment = () => {
                   💡 {currentSectionData.detailedDescription}
                 </p>
               )}
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">
+                  Section Progress: {sectionProgress.answered} of {sectionProgress.total} questions completed
+                </span>
+                {sectionProgress.answered === sectionProgress.total && (
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                )}
+              </div>
             </div>
           </CardHeader>
           
@@ -162,7 +232,7 @@ const Assessment = () => {
         </Card>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center sticky bottom-4 bg-background/80 backdrop-blur-sm p-4 rounded-lg border">
+        <div className="flex justify-between items-center sticky bottom-4 bg-background/95 backdrop-blur-sm p-4 rounded-lg border shadow-lg">
           <Button
             variant="outline"
             onClick={handlePrevious}
@@ -174,23 +244,32 @@ const Assessment = () => {
           </Button>
           
           <div className="flex gap-2">
-            {assessmentSections.map((_, index) => (
-              <div
-                key={index}
-                className={`w-2 h-2 rounded-full ${
-                  index === currentSection
-                    ? 'bg-primary'
-                    : index < currentSection
-                    ? 'bg-primary/60'
-                    : 'bg-muted'
-                }`}
-              />
-            ))}
+            {assessmentSections.map((_, index) => {
+              const sectionProgress = getSectionProgress(index);
+              const isComplete = sectionProgress.answered === sectionProgress.total;
+              
+              return (
+                <div
+                  key={index}
+                  className={`w-3 h-3 rounded-full transition-colors ${
+                    index === currentSection
+                      ? 'bg-primary ring-2 ring-primary/30'
+                      : isComplete
+                      ? 'bg-green-600'
+                      : index < currentSection
+                      ? 'bg-primary/60'
+                      : 'bg-muted'
+                  }`}
+                  title={`Section ${index + 1}: ${assessmentSections[index].title}`}
+                />
+              );
+            })}
           </div>
           
           <Button
             onClick={handleNext}
             className="flex items-center gap-2"
+            variant={currentSection === totalSections - 1 ? "default" : "default"}
           >
             {currentSection === totalSections - 1 ? 'Complete Assessment' : 'Next'}
             <ChevronRight className="w-4 h-4" />

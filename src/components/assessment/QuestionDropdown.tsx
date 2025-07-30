@@ -56,10 +56,10 @@ export const QuestionDropdown: React.FC<QuestionDropdownProps> = ({
         </div>
         
         <Select value={value} onValueChange={onChange}>
-          <SelectTrigger>
+          <SelectTrigger className={error ? 'border-destructive' : ''} data-error={!!error}>
             <SelectValue placeholder="Select an option..." />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-50 bg-background border shadow-md">
             {question.options?.map((option, index) => (
               <SelectItem key={index} value={option}>
                 {option}

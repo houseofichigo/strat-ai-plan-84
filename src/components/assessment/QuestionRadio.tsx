@@ -55,9 +55,9 @@ export const QuestionRadio: React.FC<QuestionRadioProps> = ({
           )}
         </div>
         
-        <RadioGroup value={value} onValueChange={onChange} className="space-y-3">
+        <RadioGroup value={value} onValueChange={onChange} className="space-y-3" data-error={!!error}>
           {question.options?.map((option, index) => (
-            <div key={index} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+            <div key={index} className={`flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors ${error ? 'border border-destructive/20' : ''}`}>
               <RadioGroupItem value={option} id={`${question.id}-${index}`} />
               <Label 
                 htmlFor={`${question.id}-${index}`}
