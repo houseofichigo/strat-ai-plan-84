@@ -35,8 +35,20 @@ export const assessmentService = {
         return { success: false, error: submissionError.message };
       }
 
+      if (!submission?.id) {
+        console.error('No submission ID returned');
+        return { success: false, error: 'Failed to create submission' };
+      }
+
       // Then, save individual answers for detailed analytics
-      await this.saveDetailedAnswers(submission.id, data.formData);
+      // This is now guaranteed to be linked properly due to foreign key constraint
+      try {
+        await this.saveDetailedAnswers(submission.id, data.formData);
+      } catch (answerError) {
+        console.error('Error saving detailed answers:', answerError);
+        // Don't fail the main submission if detailed answers fail
+        // The main submission is still valid
+      }
 
       return { success: true, submissionId: submission.id };
     } catch (error) {

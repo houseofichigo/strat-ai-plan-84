@@ -62,6 +62,13 @@ export type Database = {
             referencedRelation: "assessment_submissions"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_assessment_answers_submission_id"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_submissions"
+            referencedColumns: ["id"]
+          },
         ]
       }
       assessment_submissions: {
