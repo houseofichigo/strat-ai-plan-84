@@ -1,9 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Crown, Users, BarChart3, Settings } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Crown, Users, BarChart3, Settings, RefreshCw, FileText } from 'lucide-react';
+import { assessmentService, AssessmentSubmission } from '@/services/assessmentService';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Admin() {
+  const [submissions, setSubmissions] = useState<AssessmentSubmission[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const fetchSubmissions = async () => {
+    setLoading(true);
+    try {
+      const result = await assessmentService.getSubmissions();
+      if (result.success && result.data) {
+        setSubmissions(result.data);
+      } else {
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to fetch submissions',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to fetch submissions',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
@@ -15,18 +50,32 @@ export default function Admin() {
           <p className="text-muted-foreground mt-2">Manage your AI assessment platform</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* User Management */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                User Management
+                Users
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">Manage user accounts and permissions</p>
-              <Button className="w-full">Manage Users</Button>
+              <div className="text-2xl font-bold">0</div>
+              <p className="text-xs text-muted-foreground">No users yet</p>
+            </CardContent>
+          </Card>
+
+          {/* Assessments */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Assessments
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{submissions.length}</div>
+              <p className="text-xs text-muted-foreground">Total submissions</p>
             </CardContent>
           </Card>
 
@@ -35,12 +84,12 @@ export default function Admin() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5" />
-                Analytics & Reports
+                Reports
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">View assessment statistics and insights</p>
-              <Button className="w-full">View Analytics</Button>
+              <div className="text-2xl font-bold">0</div>
+              <p className="text-xs text-muted-foreground">No reports generated</p>
             </CardContent>
           </Card>
 
@@ -49,36 +98,58 @@ export default function Admin() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="w-5 h-5" />
-                System Settings
+                Settings
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground mb-4">Configure platform settings and preferences</p>
-              <Button className="w-full">System Config</Button>
+              <div className="text-2xl font-bold">Active</div>
+              <p className="text-xs text-muted-foreground">Platform operational</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Recent Activity */}
+        {/* Assessment Submissions */}
         <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Assessment Submissions</CardTitle>
+              <p className="text-muted-foreground text-sm">Recent assessment submissions from users</p>
+            </div>
+            <Button onClick={fetchSubmissions} disabled={loading} size="sm" variant="outline">
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <span className="text-sm">Assessment completed by user@example.com</span>
-                <span className="text-xs text-muted-foreground">2 hours ago</span>
+            {loading ? (
+              <p className="text-muted-foreground">Loading submissions...</p>
+            ) : submissions.length === 0 ? (
+              <p className="text-muted-foreground">No submissions yet</p>
+            ) : (
+              <div className="space-y-4">
+                {submissions.map((submission) => (
+                  <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-1">
+                      <p className="font-medium">
+                        {submission.user_name || 'Anonymous User'} 
+                        {submission.user_email && (
+                          <span className="text-muted-foreground ml-2">({submission.user_email})</span>
+                        )}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Submitted: {new Date(submission.created_at || '').toLocaleDateString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">ID: {submission.id}</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={submission.status === 'submitted' ? 'default' : 'secondary'}>
+                        {submission.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <span className="text-sm">New user registration: newuser@example.com</span>
-                <span className="text-xs text-muted-foreground">5 hours ago</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                <span className="text-sm">System backup completed successfully</span>
-                <span className="text-xs text-muted-foreground">1 day ago</span>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>

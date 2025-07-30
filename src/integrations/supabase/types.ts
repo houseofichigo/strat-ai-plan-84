@@ -14,330 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
-      activity_log: {
-        Row: {
-          action_details: Json | null
-          action_type: string
-          created_at: string | null
-          department: string | null
-          id: string
-          license_id: string | null
-          user_id: string
-        }
-        Insert: {
-          action_details?: Json | null
-          action_type: string
-          created_at?: string | null
-          department?: string | null
-          id?: string
-          license_id?: string | null
-          user_id: string
-        }
-        Update: {
-          action_details?: Json | null
-          action_type?: string
-          created_at?: string | null
-          department?: string | null
-          id?: string
-          license_id?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "activity_log_license_id_fkey"
-            columns: ["license_id"]
-            isOneToOne: false
-            referencedRelation: "licenses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      license_assignments: {
-        Row: {
-          assigned_at: string | null
-          assigned_by: string
-          id: string
-          license_id: string
-          user_id: string
-        }
-        Insert: {
-          assigned_at?: string | null
-          assigned_by: string
-          id?: string
-          license_id: string
-          user_id: string
-        }
-        Update: {
-          assigned_at?: string | null
-          assigned_by?: string
-          id?: string
-          license_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "license_assignments_license_id_fkey"
-            columns: ["license_id"]
-            isOneToOne: false
-            referencedRelation: "licenses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      licenses: {
-        Row: {
-          company_name: string
-          created_at: string | null
-          id: string
-          is_active: boolean | null
-          license_owner_id: string
-          plan: Database["public"]["Enums"]["license_plan"]
-          seats_total: number
-          seats_used: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          company_name: string
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          license_owner_id: string
-          plan: Database["public"]["Enums"]["license_plan"]
-          seats_total: number
-          seats_used?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          company_name?: string
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          license_owner_id?: string
-          plan?: Database["public"]["Enums"]["license_plan"]
-          seats_total?: number
-          seats_used?: number | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      notifications: {
-        Row: {
-          action_text: string | null
-          action_url: string | null
-          category: string
-          created_at: string
-          expires_at: string | null
-          id: string
-          is_read: boolean | null
-          message: string
-          title: string
-          type: string
-          user_id: string
-        }
-        Insert: {
-          action_text?: string | null
-          action_url?: string | null
-          category?: string
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message: string
-          title: string
-          type?: string
-          user_id: string
-        }
-        Update: {
-          action_text?: string | null
-          action_url?: string | null
-          category?: string
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          is_read?: boolean | null
-          message?: string
-          title?: string
-          type?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          company_name: string | null
-          created_at: string | null
-          department: string | null
-          email: string
-          full_name: string | null
-          id: string
-          last_activity: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          company_name?: string | null
-          created_at?: string | null
-          department?: string | null
-          email: string
-          full_name?: string | null
-          id?: string
-          last_activity?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          company_name?: string | null
-          created_at?: string | null
-          department?: string | null
-          email?: string
-          full_name?: string | null
-          id?: string
-          last_activity?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      usage_stats: {
-        Row: {
-          agents_deployed: number | null
-          created_at: string | null
-          date: string
-          id: string
-          license_id: string | null
-          login_count: number | null
-          time_on_platform: number | null
-          trainings_completed: number | null
-          trainings_started: number | null
-          use_cases_explored: number | null
-          user_id: string
-          workflows_launched: number | null
-        }
-        Insert: {
-          agents_deployed?: number | null
-          created_at?: string | null
-          date: string
-          id?: string
-          license_id?: string | null
-          login_count?: number | null
-          time_on_platform?: number | null
-          trainings_completed?: number | null
-          trainings_started?: number | null
-          use_cases_explored?: number | null
-          user_id: string
-          workflows_launched?: number | null
-        }
-        Update: {
-          agents_deployed?: number | null
-          created_at?: string | null
-          date?: string
-          id?: string
-          license_id?: string | null
-          login_count?: number | null
-          time_on_platform?: number | null
-          trainings_completed?: number | null
-          trainings_started?: number | null
-          use_cases_explored?: number | null
-          user_id?: string
-          workflows_launched?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "usage_stats_license_id_fkey"
-            columns: ["license_id"]
-            isOneToOne: false
-            referencedRelation: "licenses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_preferences: {
+      assessment_submissions: {
         Row: {
           created_at: string
           id: string
-          language: string
-          notifications_enabled: boolean | null
-          onboarding_completed: boolean | null
-          timezone: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          language?: string
-          notifications_enabled?: boolean | null
-          onboarding_completed?: boolean | null
-          timezone?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          language?: string
-          notifications_enabled?: boolean | null
-          onboarding_completed?: boolean | null
-          timezone?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_progress: {
-        Row: {
-          completed_at: string | null
-          created_at: string
-          id: string
-          last_accessed: string | null
-          module_id: string
-          module_type: string
-          progress_percentage: number
           status: string
+          submission_data: Json
           updated_at: string
-          user_id: string
+          user_email: string | null
+          user_id: string | null
+          user_name: string | null
         }
         Insert: {
-          completed_at?: string | null
           created_at?: string
           id?: string
-          last_accessed?: string | null
-          module_id: string
-          module_type: string
-          progress_percentage?: number
           status?: string
+          submission_data: Json
           updated_at?: string
-          user_id: string
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
         }
         Update: {
-          completed_at?: string | null
           created_at?: string
           id?: string
-          last_accessed?: string | null
-          module_id?: string
-          module_type?: string
-          progress_percentage?: number
           status?: string
+          submission_data?: Json
           updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_roles: {
-        Row: {
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
+          user_email?: string | null
+          user_id?: string | null
+          user_name?: string | null
         }
         Relationships: []
       }

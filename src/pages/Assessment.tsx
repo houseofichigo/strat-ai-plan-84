@@ -4,25 +4,84 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { AssessmentSection } from '@/components/assessment/AssessmentSection';
 import { AssessmentResults } from '@/components/assessment/AssessmentResults';
-import { ChevronRight, ChevronLeft } from 'lucide-react';
+import { ChevronRight, ChevronLeft, TestTube } from 'lucide-react';
 import { assessmentSections } from '@/data/assessmentData';
 import { useAssessmentForm } from '@/hooks/useAssessmentForm';
+import { assessmentService } from '@/services/assessmentService';
+import { useToast } from '@/hooks/use-toast';
 
 const Assessment = () => {
   const [currentSection, setCurrentSection] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const { formData, updateAnswer, validateSection, isComplete } = useAssessmentForm();
+  const { toast } = useToast();
 
   const totalSections = assessmentSections.length;
   const progress = ((currentSection + 1) / totalSections) * 100;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (validateSection(currentSection)) {
       if (currentSection < totalSections - 1) {
         setCurrentSection(currentSection + 1);
       } else {
-        setShowResults(true);
+        await handleSubmit();
       }
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (isComplete()) {
+      try {
+        const result = await assessmentService.submitAssessment({
+          formData,
+          userEmail: 'user@example.com',
+          userName: 'Anonymous User'
+        });
+        
+        if (result.success) {
+          toast({
+            title: 'Assessment Submitted',
+            description: `Your assessment has been submitted successfully. ID: ${result.submissionId}`,
+          });
+          setShowResults(true);
+        } else {
+          toast({
+            title: 'Submission Failed',
+            description: result.error || 'Failed to submit assessment',
+            variant: 'destructive',
+          });
+        }
+      } catch (error) {
+        toast({
+          title: 'Submission Error',
+          description: 'An unexpected error occurred',
+          variant: 'destructive',
+        });
+      }
+    }
+  };
+
+  const handleTestSubmission = async () => {
+    try {
+      const result = await assessmentService.testSubmission();
+      if (result.success) {
+        toast({
+          title: 'Test Submission Successful',
+          description: `Test data submitted successfully. ID: ${result.submissionId}`,
+        });
+      } else {
+        toast({
+          title: 'Test Submission Failed',
+          description: result.error || 'Failed to submit test data',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Test Submission Error',
+        description: 'An unexpected error occurred',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -45,9 +104,19 @@ const Assessment = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-3xl font-bold text-foreground">AI Maturity Assessment</h1>
-            <span className="text-sm text-muted-foreground">
-              Section {currentSection + 1} of {totalSections}
-            </span>
+            <div className="flex items-center gap-4">
+              <Button
+                onClick={handleTestSubmission}
+                variant="outline"
+                size="sm"
+              >
+                <TestTube className="w-4 h-4 mr-2" />
+                Test Submission
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Section {currentSection + 1} of {totalSections}
+              </span>
+            </div>
           </div>
           
           <Progress value={progress} className="h-2" />

@@ -1,54 +1,18 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 
 export interface ProgressData {
   id: string;
-  user_id: string;
   module_type: 'assessment' | 'training' | 'workflow' | 'use_case';
   module_id: string;
   progress_percentage: number;
   status: 'not_started' | 'in_progress' | 'completed';
   last_accessed: string;
-  completed_at?: string;
 }
 
 export const useProgress = (userId?: string) => {
+  // Simplified mock implementation for now
   const [progress, setProgress] = useState<ProgressData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-
-  const fetchProgress = async () => {
-    try {
-      setLoading(true);
-      let query = supabase
-        .from('user_progress')
-        .select('*');
-
-      if (userId) {
-        query = query.eq('user_id', userId);
-      } else {
-        const user = await supabase.auth.getUser();
-        if (user.data.user?.id) {
-          query = query.eq('user_id', user.data.user.id);
-        }
-      }
-
-      const { data, error } = await query.order('last_accessed', { ascending: false });
-
-      if (error) throw error;
-      setProgress((data || []) as ProgressData[]);
-    } catch (error) {
-      console.error('Error fetching progress:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load progress data',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [loading, setLoading] = useState(false);
 
   const updateProgress = async (
     moduleType: string,
@@ -56,44 +20,16 @@ export const useProgress = (userId?: string) => {
     progressPercentage: number,
     status?: string
   ) => {
-    try {
-      const user = await supabase.auth.getUser();
-      if (!user.data.user) return;
-
-      const updateData: any = {
-        user_id: user.data.user.id,
-        module_type: moduleType,
-        module_id: moduleId,
-        progress_percentage: progressPercentage,
-        last_accessed: new Date().toISOString(),
-      };
-
-      if (status) {
-        updateData.status = status;
-        if (status === 'completed') {
-          updateData.completed_at = new Date().toISOString();
-        }
-      }
-
-      const { error } = await supabase
-        .from('user_progress')
-        .upsert(updateData, {
-          onConflict: 'user_id,module_type,module_id'
-        });
-
-      if (error) throw error;
-      
-      // Refresh progress data
-      await fetchProgress();
-      
-    } catch (error) {
-      console.error('Error updating progress:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update progress',
-        variant: 'destructive',
-      });
-    }
+    // Mock implementation
+    const newProgress: ProgressData = {
+      id: crypto.randomUUID(),
+      module_type: moduleType as any,
+      module_id: moduleId,
+      progress_percentage: progressPercentage,
+      status: (status as any) || 'in_progress',
+      last_accessed: new Date().toISOString(),
+    };
+    setProgress(prev => [...prev.filter(p => !(p.module_type === moduleType && p.module_id === moduleId)), newProgress]);
   };
 
   const getModuleProgress = (moduleType: string, moduleId: string) => {
@@ -111,9 +47,9 @@ export const useProgress = (userId?: string) => {
     return Math.round(totalProgress / filteredProgress.length);
   };
 
-  useEffect(() => {
-    fetchProgress();
-  }, [userId]);
+  const refreshProgress = async () => {
+    // Mock implementation
+  };
 
   return {
     progress,
@@ -121,6 +57,6 @@ export const useProgress = (userId?: string) => {
     updateProgress,
     getModuleProgress,
     getOverallProgress,
-    refreshProgress: fetchProgress,
+    refreshProgress,
   };
 };
