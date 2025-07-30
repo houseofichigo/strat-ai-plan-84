@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessment_answers: {
+        Row: {
+          answer_array: string[] | null
+          answer_value: string | null
+          created_at: string
+          id: string
+          is_required: boolean
+          question_id: string
+          question_text: string
+          question_type: string
+          section_id: string
+          section_name: string
+          submission_id: string
+        }
+        Insert: {
+          answer_array?: string[] | null
+          answer_value?: string | null
+          created_at?: string
+          id?: string
+          is_required?: boolean
+          question_id: string
+          question_text: string
+          question_type: string
+          section_id: string
+          section_name: string
+          submission_id: string
+        }
+        Update: {
+          answer_array?: string[] | null
+          answer_value?: string | null
+          created_at?: string
+          id?: string
+          is_required?: boolean
+          question_id?: string
+          question_text?: string
+          question_type?: string
+          section_id?: string
+          section_name?: string
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_answers_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assessment_submissions: {
         Row: {
           created_at: string

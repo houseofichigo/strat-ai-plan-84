@@ -18,7 +18,8 @@ export const assessmentService = {
     userName?: string;
   }): Promise<{ success: boolean; submissionId?: string; error?: string }> {
     try {
-      const { data: result, error } = await supabase
+      // First, create the main submission
+      const { data: submission, error: submissionError } = await supabase
         .from('assessment_submissions')
         .insert({
           submission_data: data.formData,
@@ -29,15 +30,58 @@ export const assessmentService = {
         .select('id')
         .single();
 
-      if (error) {
-        console.error('Error submitting assessment:', error);
-        return { success: false, error: error.message };
+      if (submissionError) {
+        console.error('Error creating submission:', submissionError);
+        return { success: false, error: submissionError.message };
       }
 
-      return { success: true, submissionId: result.id };
+      // Then, save individual answers for detailed analytics
+      await this.saveDetailedAnswers(submission.id, data.formData);
+
+      return { success: true, submissionId: submission.id };
     } catch (error) {
       console.error('Error submitting assessment:', error);
       return { success: false, error: 'Failed to submit assessment' };
+    }
+  },
+
+  async saveDetailedAnswers(submissionId: string, formData: FormData) {
+    const { assessmentSections } = await import('@/data/assessmentData');
+    const answers: any[] = [];
+
+    // Process each section and question
+    for (const section of assessmentSections) {
+      const sectionData = formData[section.id] || {};
+      
+      for (const question of section.questions) {
+        const answerValue = sectionData[question.id];
+        
+        if (answerValue !== undefined && answerValue !== '' && !(Array.isArray(answerValue) && answerValue.length === 0)) {
+          answers.push({
+            submission_id: submissionId,
+            section_id: section.id,
+            section_name: section.title,
+            question_id: question.id,
+            question_text: question.text,
+            question_type: question.type,
+            answer_value: Array.isArray(answerValue) ? null : String(answerValue),
+            answer_array: Array.isArray(answerValue) ? answerValue : null,
+            is_required: question.required || false
+          });
+        }
+      }
+    }
+
+    // Insert all answers in batch
+    if (answers.length > 0) {
+      const { error } = await supabase
+        .from('assessment_answers')
+        .insert(answers);
+
+      if (error) {
+        console.error('Error saving detailed answers:', error);
+        // Don't fail the main submission if this fails
+      }
     }
   },
 
@@ -76,11 +120,18 @@ export const assessmentService = {
     const testData: FormData = {
       'data-readiness': {
         'data-quality': 'good',
-        'data-governance': 'basic'
+        'data-governance': 'basic',
+        'data-infrastructure': 'adequate'
       },
       'ai-capabilities': {
         'current-ai-usage': 'none',
-        'ai-strategy': 'developing'
+        'ai-strategy': 'developing',
+        'ai-team': 'limited'
+      },
+      'technology-infrastructure': {
+        'cloud-readiness': 'hybrid',
+        'data-integration': 'some',
+        'security-compliance': 'basic'
       }
     };
 
@@ -89,5 +140,30 @@ export const assessmentService = {
       userEmail: 'test@example.com',
       userName: 'Test User'
     });
+  },
+
+  async getDetailedAnswers(submissionId?: string): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    try {
+      let query = supabase
+        .from('assessment_answers')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (submissionId) {
+        query = query.eq('submission_id', submissionId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching detailed answers:', error);
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data: data || [] };
+    } catch (error) {
+      console.error('Error fetching detailed answers:', error);
+      return { success: false, error: 'Failed to fetch detailed answers' };
+    }
   }
 };

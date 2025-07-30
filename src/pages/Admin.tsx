@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Crown, Users, BarChart3, Settings, RefreshCw, FileText } from 'lucide-react';
 import { assessmentService, AssessmentSubmission } from '@/services/assessmentService';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Admin() {
   const [submissions, setSubmissions] = useState<AssessmentSubmission[]>([]);
@@ -37,6 +38,31 @@ export default function Admin() {
 
   useEffect(() => {
     fetchSubmissions();
+
+    // Set up real-time subscription for new submissions
+    const channel = supabase
+      .channel('admin-submissions')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'assessment_submissions'
+        },
+        () => {
+          // Refresh submissions when new ones are added
+          fetchSubmissions();
+          toast({
+            title: 'New Submission',
+            description: 'A new assessment submission has been received',
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return (
